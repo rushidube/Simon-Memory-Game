@@ -1,0 +1,110 @@
+body{
+    text-align: center;
+    font-family: 'Poppins',sans-serif;
+     background: linear-gradient(135deg,#141e30,#243b55);
+     color: white;
+     height: 100vh;
+}
+
+h1{
+    font-size: 48px;
+    margin-top: 20px;
+}
+
+h3{
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+.btn{
+    height: 180px;
+    width: 180px;
+    border-radius: 28px;
+    border: 2px solid black;
+    margin: 20px;
+    cursor: pointer;
+    transition:all 0.2s ease;
+    box-shadow:0 8px 20px rgba(0,0,0,0.4);
+        
+}
+
+.btn:hover{
+     transform:scale(1.05);
+     box-shadow:0 12px 25px rgba(0,0,0,0.6);
+}
+
+.btn-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.line-one,
+.line-two{
+    display: flex;
+}
+
+.yellow{
+    background-color: #f99b45;
+}
+
+.red{
+    background-color: #d95980;
+}
+
+.green{
+    background-color: #63aac0;
+}
+
+.purple{
+    background-color: #819ff9;
+}
+
+.flash{
+    transform: scale(1.1);
+    filter: brightness(150%);
+     box-shadow:0 0 25px white;
+}
+
+.userFlash{
+    transform: scale(1.08);
+    filter: brightness(130%);
+    box-shadow: 0 0 20px #00ffcc;
+
+}
+
+.btn{
+    transition: transform 0.15s, filter 0.15s, box-shadow 0.15s;
+}
+
+.scoreboard{
+    display: flex;
+    justify-content: center;
+    gap:40px;
+    font-size: 1.3rem;
+    margin: 15px;
+}
+
+#level,
+#highscore{
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px, 20px;
+    border-radius: 10px;
+}
+
+.controls button{
+    margin: 30px;
+}
+
+.controls button{
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background:#00c6ff;
+    color:white;
+    transition:0.2s;
+    
+}

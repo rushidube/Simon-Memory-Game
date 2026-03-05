@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon-Says</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Simon Game</h1>
+
+     <div class="scoreboard">
+        <div id="level">Level : 0</div>
+        <div id="highscore">High Score:0</div>
+     </div>
+
+    <h3>Press Start to play again</h3>
+     
+      <div class="controls">
+        <button id="startBtn">Start Game</button>
+        <button id="restartBtn">Restart Game</button>
+      </div>
+    <div class="btn-container">
+
+       <div class="line-one">
+         <div class="btn red" type="button" id="red"></div>
+        <div class="btn yellow" type="button" id="yellow"></div>
+       </div>
+
+        <div class="line-two">
+            <div class="btn green" type="button" id="green"></div>
+        <div class="btn purple" type="button" id="purple"></div>
+
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
