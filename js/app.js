@@ -56,6 +56,17 @@ const highScoreDisplay = document.getElementById("highscore");
 const padContainer = document.querySelector(".btn-container");
 const padElements = document.querySelectorAll(".btn");
 
+const statsToggleBtn = document.getElementById("statsToggleBtn");
+const statsOverlay = document.getElementById("statsOverlay");
+const statsPanel = document.getElementById("statsPanel");
+const statsCloseBtn = document.getElementById("statsCloseBtn");
+const statsList = document.getElementById("statsList");
+const statsChart = document.getElementById("statsChart");
+const statsResetBtn = document.getElementById("statsResetBtn");
+const statsResetConfirm = document.getElementById("statsResetConfirm");
+const statsResetConfirmBtn = document.getElementById("statsResetConfirmBtn");
+const statsResetCancelBtn = document.getElementById("statsResetCancelBtn");
+
 // Maps a color name ("red") to its pad element, so the game loop can look
 // up "which element is red" instead of running a selector query every turn.
 const padsByColor = {};
@@ -442,3 +453,78 @@ document.addEventListener("visibilitychange", () => {
     stopAllPadEffects();
     returnToIdle();
 });
+
+// ---------------------------------------------------------------------------
+// Statistics panel
+// ---------------------------------------------------------------------------
+
+let statsLastFocusedElement = null;
+
+function getFocusableStatsElements() {
+    return [...statsPanel.querySelectorAll("button")].filter((el) => el.offsetParent !== null);
+}
+
+function handleStatsKeydown(event) {
+    if (event.key === "Escape") {
+        closeStatsPanel();
+        return;
+    }
+    if (event.key !== "Tab") return;
+
+    const focusable = getFocusableStatsElements();
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
+function handleStatsPanelTransitionEnd(event) {
+    if (event.target !== statsPanel || event.propertyName !== "transform") return;
+    if (!statsPanel.classList.contains("is-open")) {
+        statsOverlay.hidden = true;
+        statsPanel.hidden = true;
+    }
+}
+
+function openStatsPanel() {
+    statsLastFocusedElement = document.activeElement;
+    statsOverlay.hidden = false;
+    statsPanel.hidden = false;
+    // Force a reflow before adding the open class so the slide-in
+    // transition actually plays instead of snapping straight to open.
+    void statsPanel.offsetWidth;
+    statsOverlay.classList.add("is-open");
+    statsPanel.classList.add("is-open");
+    statsToggleBtn.setAttribute("aria-expanded", "true");
+    statsCloseBtn.focus();
+    document.addEventListener("keydown", handleStatsKeydown);
+}
+
+function closeStatsPanel() {
+    statsOverlay.classList.remove("is-open");
+    statsPanel.classList.remove("is-open");
+    statsToggleBtn.setAttribute("aria-expanded", "false");
+    document.removeEventListener("keydown", handleStatsKeydown);
+    if (statsLastFocusedElement) statsLastFocusedElement.focus();
+
+    // Fallback: ensure hidden attributes are set if transitionend doesn't fire
+    // (e.g., due to very short or missing CSS transitions)
+    setTimeout(() => {
+        if (!statsPanel.classList.contains("is-open")) {
+            statsOverlay.hidden = true;
+            statsPanel.hidden = true;
+        }
+    }, 250);
+}
+
+statsPanel.addEventListener("transitionend", handleStatsPanelTransitionEnd);
+statsToggleBtn.addEventListener("click", openStatsPanel);
+statsCloseBtn.addEventListener("click", closeStatsPanel);
+statsOverlay.addEventListener("click", closeStatsPanel);
