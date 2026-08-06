@@ -458,6 +458,77 @@ document.addEventListener("visibilitychange", () => {
 // Statistics panel
 // ---------------------------------------------------------------------------
 
+function formatDuration(ms) {
+    const totalSeconds = Math.round(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
+}
+
+function formatDate(isoString) {
+    return new Date(isoString).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+}
+
+// Each row: an icon, a label, and a function deriving its display string
+// from a StatsManager.getStats() snapshot. Centralizing this as config
+// (rather than 13 near-identical DOM-building blocks) is what
+// renderStatsList loops over.
+const STAT_ROWS = [
+    { icon: "🎮", label: "Games Played", value: (s) => String(s.gamesPlayed) },
+    { icon: "🪜", label: "Highest Level Reached", value: (s) => String(s.highestLevel) },
+    { icon: "📊", label: "Average Score", value: (s) => (s.gamesPlayed === 0 ? "—" : (s.totalScore / s.gamesPlayed).toFixed(1)) },
+    { icon: "✅", label: "Correct Presses", value: (s) => String(s.correctPresses) },
+    { icon: "❌", label: "Incorrect Presses", value: (s) => String(s.incorrectPresses) },
+    { icon: "🔥", label: "Longest Streak", value: (s) => String(s.longestStreak) },
+    { icon: "⚡", label: "Current Streak", value: (s) => String(s.currentStreak) },
+    { icon: "⏱", label: "Total Time Played", value: (s) => formatDuration(s.totalPlayTimeMs) },
+    { icon: "🚀", label: "Fastest Level Time", value: (s) => (s.fastestLevelMs === null ? "—" : formatDuration(s.fastestLevelMs)) },
+    { icon: "🔁", label: "Sequences Completed", value: (s) => String(s.sequencesCompleted) },
+    { icon: "🏁", label: "Last Game Score", value: (s) => (s.lastScore === null ? "—" : String(s.lastScore)) },
+    { icon: "📅", label: "Last Played", value: (s) => (s.lastPlayedDate === null ? "—" : formatDate(s.lastPlayedDate)) },
+    { icon: "🏆", label: "High Scores Achieved", value: (s) => String(s.highScoresAchieved) },
+];
+
+function renderStatsList(stats) {
+    statsList.innerHTML = STAT_ROWS.map(
+        (row) => `<div class="stats-row">
+            <span class="stats-row-icon" aria-hidden="true">${row.icon}</span>
+            <span class="stats-row-label">${row.label}</span>
+            <span class="stats-row-value">${row.value(stats)}</span>
+        </div>`
+    ).join("");
+}
+
+function renderStatsChart(stats) {
+    const scores = stats.recentScores;
+    if (scores.length < 2) {
+        statsChart.innerHTML = `<p class="stats-chart-empty">Play a few games to see your trend</p>`;
+        return;
+    }
+
+    const max = Math.max(...scores);
+    statsChart.innerHTML = scores
+        .map((score) => {
+            const heightPercent = max === 0 ? 4 : Math.max(4, Math.round((score / max) * 100));
+            return `<div class="stats-bar" style="height:${heightPercent}%" role="img" aria-label="Score ${score}"></div>`;
+        })
+        .join("");
+}
+
+function renderStatsPanel() {
+    const stats = StatsManager.getStats();
+    renderStatsList(stats);
+    renderStatsChart(stats);
+}
+
 let statsLastFocusedElement = null;
 
 function getFocusableStatsElements() {
@@ -494,6 +565,7 @@ function handleStatsPanelTransitionEnd(event) {
 }
 
 function openStatsPanel() {
+    renderStatsPanel();
     statsLastFocusedElement = document.activeElement;
     statsOverlay.hidden = false;
     statsPanel.hidden = false;
