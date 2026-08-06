@@ -854,3 +854,264 @@ h1{
         transition-duration: 0.001ms !important;
     }
 }
+
+/* ==========================================================================
+   Statistics Dashboard
+   Slide-out panel + backdrop, reusing the scoreboard's existing glass-card
+   language (--color-panel-bg / --color-panel-border / --shadow-panel)
+   rather than introducing a new visual style. Only one new token
+   (--stats-panel-width) was actually needed.
+   ========================================================================== */
+
+:root{
+    --stats-panel-width: min(360px, 92vw);
+}
+
+.stats-trigger{
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    padding: 0;
+    margin-left: 2px;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--color-text-muted);
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-panel);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-release);
+}
+
+@media (hover: hover) and (pointer: fine){
+    .stats-trigger:hover{
+        color: var(--color-text-primary);
+        border-color: rgba(255, 255, 255, 0.32);
+        transform: translateY(-1px);
+    }
+}
+
+.stats-overlay{
+    position: fixed;
+    inset: 0;
+    background-color: rgba(6, 8, 16, 0.55);
+    opacity: 0;
+    z-index: 60;
+    transition: opacity var(--transition-release);
+}
+
+.stats-overlay.is-open{
+    opacity: 1;
+}
+
+.stats-panel{
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 61;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-7);
+    width: var(--stats-panel-width);
+    height: 100%;
+    padding: var(--space-8) var(--space-7);
+    overflow-y: auto;
+    background:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 30%),
+        var(--color-bg-end);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-left: 1px solid var(--color-panel-border);
+    box-shadow: -18px 0 40px rgba(0, 0, 0, 0.35);
+    transform: translateX(100%);
+    transition: transform var(--transition-release);
+    text-align: left;
+}
+
+.stats-panel.is-open{
+    transform: translateX(0);
+}
+
+.stats-panel-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.stats-panel-header h2{
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.stats-close-btn{
+    appearance: none;
+    -webkit-appearance: none;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stats-close-btn:hover{
+    color: var(--color-text-primary);
+    border-color: rgba(255, 255, 255, 0.32);
+}
+
+.stats-list{
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.stats-row{
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-5);
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    border-radius: var(--radius-sm);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine){
+    .stats-row:hover{
+        border-color: rgba(255, 255, 255, 0.24);
+        background-color: rgba(255, 255, 255, 0.08);
+    }
+}
+
+.stats-row-icon{
+    font-size: 0.95em;
+}
+
+.stats-row-label{
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.stats-row-value{
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-primary);
+}
+
+.stats-chart-title{
+    margin: 0 0 var(--space-4);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.stats-chart{
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+    height: 72px;
+    padding: var(--space-3);
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    border-radius: var(--radius-sm);
+}
+
+.stats-bar{
+    flex: 1;
+    min-height: 4px;
+    background-color: var(--color-accent);
+    border-radius: 3px 3px 0 0;
+}
+
+.stats-chart-empty{
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+}
+
+.stats-reset-section{
+    margin-top: auto;
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-panel-border);
+}
+
+.stats-reset-btn{
+    width: 100%;
+    padding: var(--space-4);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-red);
+    background: transparent;
+    border: 1px solid rgba(217, 89, 128, 0.4);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stats-reset-btn:hover{
+    background-color: rgba(217, 89, 128, 0.1);
+    border-color: rgba(217, 89, 128, 0.6);
+}
+
+.stats-reset-confirm p{
+    margin: 0 0 var(--space-4);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.stats-reset-actions{
+    display: flex;
+    gap: var(--space-4);
+}
+
+.stats-reset-confirm-btn,
+.stats-reset-cancel-btn{
+    flex: 1;
+    padding: var(--space-4);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+.stats-reset-confirm-btn{
+    color: #fff;
+    background-color: var(--color-red);
+    border: none;
+}
+
+.stats-reset-cancel-btn{
+    color: var(--color-text-muted);
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.stats-close-btn:focus-visible,
+.stats-trigger:focus-visible,
+.stats-reset-btn:focus-visible,
+.stats-reset-confirm-btn:focus-visible,
+.stats-reset-cancel-btn:focus-visible{
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+@media (max-width: 420px){
+    .stats-panel{
+        padding: var(--space-6) var(--space-5);
+    }
+}
