@@ -1,0 +1,856 @@
+/* ==========================================================================
+   Simon Game — Stylesheet
+   Design tokens live in :root, grouped by category. Component sections
+   below consume those tokens instead of hard-coded values.
+   ========================================================================== */
+
+:root{
+    /* Colors — background */
+    --color-bg-start: #1b2340;
+    --color-bg-end: #10131c;
+
+    /* Colors — surfaces & borders */
+    --color-panel-bg: rgba(255, 255, 255, 0.05);
+    --color-panel-border: rgba(255, 255, 255, 0.09);
+
+    /* Colors — text */
+    --color-text-primary: #f2f3f7;
+    --color-text-muted: #9aa0ac;
+
+    /* Colors — accent (Start button). Nudged a few percent darker than a
+       first-instinct "#4f6df5" so white button text clears 4.5:1 contrast. */
+    --color-accent: #4a67e6;
+    --color-accent-hover: #3d59e0;
+
+    /* Focus indicator — offset outside the element so it always lands on
+       the dark page background, which keeps contrast high against every
+       pad color instead of just some of them. */
+    --focus-ring-color: #ffffff;
+    --focus-ring-width: 3px;
+    --focus-ring-offset: 4px;
+
+    /* Colors — game pads (original Simon palette, unchanged) */
+    --color-yellow: #f99b45;
+    --color-red: #d95980;
+    --color-green: #63aac0;
+    --color-purple: #819ff9;
+
+    /* A slight uniform richness boost applied to every pad via `filter`
+       rather than editing the hex values above — the palette itself stays
+       exactly what it was, this just makes it read a little less washed
+       out under the flash/glow states. */
+    --pad-saturate: saturate(1.08);
+
+    /* Colors — celebration accent. Used in exactly one place: the "New
+       High Score" moment (status highlight + scoreboard sparkle). Not
+       part of the core palette, so it stays out of the pad/UI color set
+       above. */
+    --color-celebrate: #f4bf4f;
+    --color-celebrate-glow: rgba(244, 191, 79, 0.55);
+
+    /* Spacing scale (px values already used throughout the design) */
+    --space-1: 4px;
+    --space-2: 6px;
+    --space-3: 8px;
+    --space-4: 10px;
+    --space-5: 14px;
+    --space-6: 16px;
+    --space-7: 20px;
+    --space-8: 26px;
+    --space-9: 28px;
+    --space-10: 34px;
+    --space-11: 40px;
+
+    /* Border-radius scale */
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+
+    /* Shadows */
+    --shadow-panel: 0 2px 10px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --shadow-accent: 0 6px 16px rgba(74, 103, 230, 0.35);
+    --shadow-accent-hover: 0 8px 20px rgba(74, 103, 230, 0.45);
+    --shadow-accent-active: 0 4px 10px rgba(74, 103, 230, 0.35);
+    --shadow-game-btn: 0 10px 22px rgba(0, 0, 0, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.15), inset 0 -6px 12px rgba(0, 0, 0, 0.12);
+    --shadow-game-btn-hover: 0 14px 28px rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.18), inset 0 -6px 12px rgba(0, 0, 0, 0.14);
+    /* The flash glow now includes a middle layer tinted to the pad's own
+       color (via --pad-glow, set per color class below) instead of a flat
+       white ring — reads as the pad casting its own light, not just being
+       outlined. */
+    /* A third, much wider and softer layer (--pad-glow-soft) sits behind
+       the original ring — that's the difference between "this pad got
+       brighter" and "this pad is casting light onto the board around
+       it" (bloom), without changing how tight/opaque the original ring
+       reads. */
+    --shadow-flash: 0 0 0 4px rgba(255, 255, 255, 0.25), 0 0 26px 6px var(--pad-glow, rgba(255, 255, 255, 0.55)), 0 0 60px 20px var(--pad-glow-soft, rgba(255, 255, 255, 0.3)), 0 12px 26px rgba(0, 0, 0, 0.4);
+    --shadow-user-flash: 0 0 0 3px rgba(255, 255, 255, 0.18), 0 0 18px 4px var(--pad-glow, rgba(255, 255, 255, 0.4)), 0 0 42px 14px var(--pad-glow-soft, rgba(255, 255, 255, 0.22)), 0 10px 22px rgba(0, 0, 0, 0.35);
+
+    /* Pressed state: smaller outer lift and a fainter top highlight/deeper
+       inset than the resting shadow, so the pad visibly sinks under a
+       click instead of just scaling down. */
+    --shadow-game-btn-active: 0 4px 10px rgba(0, 0, 0, 0.3), inset 0 2px 0 rgba(255, 255, 255, 0.08), inset 0 -3px 8px rgba(0, 0, 0, 0.22);
+
+    /* Transitions */
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-fast: 0.15s var(--ease-standard);
+    --transition-press: 0.1s cubic-bezier(0.4, 0, 1, 1);
+    --transition-release: 0.22s var(--ease-standard);
+
+    /* Fluid component sizing. Each scales continuously between the same
+       floor/ceiling the old fixed breakpoint used to jump between, so
+       tablet and landscape-phone widths in the old "in-between" gap now
+       get a proportional size instead of either extreme. Mixing a fixed
+       unit with vw (rather than pure vw) keeps these responsive to the
+       user's base font size, not just viewport width. */
+    --heading-size: clamp(2rem, 1rem + 3.3vw, 2.6rem);
+    --scoreboard-gap: clamp(var(--space-4), 2.2vw, var(--space-6));
+    --card-padding-y: clamp(var(--space-3), 1.4vw, var(--space-4));
+    --card-padding-x: clamp(var(--space-6), 3.6vw, var(--space-8));
+    --card-min-width: clamp(96px, 20vw, 130px);
+    --game-btn-size: clamp(115px, 25vw, 170px);
+
+    /* Each pad is rounded unevenly: generous on its outer corner, tight on
+       the three corners that face the board's center. All four pads
+       sharing this rule is what makes the board read as one rounded-square
+       object with a seam cross cut into it, instead of four separate
+       rounded tiles. */
+    --pad-radius-outer: clamp(28px, 6.5vw, 44px);
+    --pad-radius-inner: clamp(6px, 1.6vw, 10px);
+
+    /* The board the pads sit on. Tighter than the general spacing scale on
+       purpose — pulling the four pads close together, with the board's
+       own surface showing through the gap as a thin seam, is what reads
+       as "one console" instead of four separate tiles. */
+    --board-gap: clamp(var(--space-3), 1.8vw, var(--space-5));
+    --board-radius: clamp(32px, 9vw, 64px);
+
+    /* Two-layer board body: a slim outer bezel (--board-frame-padding)
+       wrapping a recessed inner stage (--board-stage-padding) the pads
+       sit in. Splitting the old single padding value into frame + stage
+       is what gives the board a physical rim and a sunken bed instead of
+       pads floating on one flat panel. */
+    --board-frame-padding: clamp(var(--space-3), 1.8vw, var(--space-5));
+    --board-stage-padding: clamp(var(--space-6), 3.6vw, var(--space-9));
+    --board-stage-radius: clamp(24px, 7vw, 52px);
+    --shadow-board: 0 26px 54px rgba(0, 0, 0, 0.5), 0 2px 0 rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -18px 34px rgba(0, 0, 0, 0.32);
+    --shadow-board-stage: inset 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.04), inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+
+    /* Center hub — purely decorative, sized as a fixed proportion of the
+       pad so it scales in step with the board at every breakpoint. */
+    --hub-size: clamp(46px, 12vw, 68px);
+    --shadow-hub: 0 8px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -4px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* ==========================================================================
+   Reset
+   ========================================================================== */
+
+*{
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body{
+    overflow-x: hidden;
+}
+
+/* ==========================================================================
+   Global polish
+   ========================================================================== */
+
+::selection{
+    background-color: var(--color-accent);
+    color: #fff;
+}
+
+/* Firefox + modern Chromium */
+html{
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+/* Safari + Chromium fallback */
+::-webkit-scrollbar{
+    width: 10px;
+}
+
+::-webkit-scrollbar-track{
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb{
+    background-color: rgba(255, 255, 255, 0.18);
+    border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background-color: rgba(255, 255, 255, 0.32);
+}
+
+/* ==========================================================================
+   Base / body
+   ========================================================================== */
+
+body{
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-11) var(--space-7);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, var(--color-bg-start) 0%, var(--color-bg-end) 75%);
+    color: var(--color-text-primary);
+}
+
+/* Game-over wash: a fixed, pointer-events-none overlay that stays fully
+   transparent until JS toggles .game-over-flash on <body>, then pulses
+   once. Sits above the content (not behind it) so it's actually visible —
+   the previous inline background-color trick painted underneath the
+   opaque gradient and never showed. */
+body::before{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-color: #7a2340;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+}
+
+body.game-over-flash::before{
+    animation: gameOverPulse 0.6s var(--ease-standard);
+}
+
+/* Staggered entrance for the primary content blocks on first paint. */
+main > h1{
+    animation: fadeSlideIn 0.45s var(--ease-standard) backwards;
+}
+
+main > .scoreboard{
+    animation: fadeSlideIn 0.45s var(--ease-standard) 0.08s backwards;
+}
+
+main > #statusMessage{
+    animation: fadeSlideIn 0.45s var(--ease-standard) 0.16s backwards;
+}
+
+main > .controls{
+    animation: fadeSlideIn 0.45s var(--ease-standard) 0.24s backwards;
+}
+
+main > .btn-container{
+    animation: fadeSlideIn 0.45s var(--ease-standard) 0.32s backwards;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+h1{
+    font-size: var(--heading-size);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0 0 var(--space-2);
+}
+
+#statusMessage{
+    /* A floor, not a fixed height — covers every routine state (single
+       line, or the title+subtitle pairs below) so cycling through them
+       doesn't shove the controls/board up and down. The rare, taller
+       game-over summary is left free to grow past this.
+       Deliberately NOT display:flex here — the game-over message mixes
+       plain text with <br>/<b>/<span>, and flexing a paragraph like that
+       turns each text run into its own flex item and mangles the line
+       breaks. Block layout (the default) handles that content correctly. */
+    min-height: 2.75rem;
+    font-weight: 400;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 360px;
+    margin: 0 0 var(--space-9);
+    color: var(--color-text-muted);
+}
+
+/* Simon's Turn / Your Turn: a short bold title plus a muted one-line
+   explainer, instead of one flat sentence. */
+#statusMessage .status-title{
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+#statusMessage .status-subtitle{
+    display: block;
+    font-size: 0.85rem;
+    margin-top: 2px;
+    color: var(--color-text-muted);
+}
+
+/* The one moment status text breaks from the muted palette — reserved for
+   the "New High Score" line inside the game-over summary. */
+#statusMessage .status-highlight{
+    color: var(--color-celebrate);
+    font-weight: 600;
+}
+
+/* Countdown steps (3 / 2 / 1 / Go!) get their own bigger, bolder read —
+   see the countdown-pop animation below for the accompanying scale-in. */
+#statusMessage.status-countdown{
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--color-text-primary);
+}
+
+#statusMessage.countdown-pop{
+    animation: countdownPop 0.35s var(--ease-standard);
+}
+
+/* ==========================================================================
+   Scoreboard
+   ========================================================================== */
+
+.scoreboard{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--scoreboard-gap);
+    margin: var(--space-1) 0 var(--space-8);
+}
+
+#level,
+#highscore{
+    position: relative; /* anchors the celebrate sparkles below */
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    min-width: var(--card-min-width);
+    padding: var(--card-padding-y) var(--card-padding-x);
+    background-color: var(--color-panel-bg);
+    border: 1px solid var(--color-panel-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-panel);
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.score-icon{
+    font-size: 0.9em;
+}
+
+.score-label{
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.score-value{
+    font-weight: 700;
+    color: var(--color-text-primary);
+    /* Keeps digit width steady so the card doesn't shift width every time
+       the score ticks from a single digit to double digits. */
+    font-variant-numeric: tabular-nums;
+}
+
+/* Re-triggered by JS (class removed + re-added) whenever the level or
+   high score text updates, so the new value settles in instead of
+   snapping straight to place. */
+#level.badge-update,
+#highscore.badge-update{
+    animation: badgeUpdate 0.3s var(--ease-standard);
+}
+
+/* A richer variant of the same update animation, reserved for the moment
+   the player actually beats their high score. */
+#highscore.celebrate{
+    animation: celebrateUpdate 0.55s var(--ease-standard);
+}
+
+/* Two tiny sparkles that pop off the card and fade — the whole thing
+   settles within 1.1s, well under the "keep it subtle" budget. Pure CSS,
+   no extra DOM: generated content on the same element the bounce above
+   already animates. */
+#highscore.celebrate::before,
+#highscore.celebrate::after{
+    content: "✨";
+    position: absolute;
+    top: -6px;
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    animation: sparkleFloat 0.9s var(--ease-standard);
+}
+
+#highscore.celebrate::before{
+    left: 14%;
+    animation-delay: 0.05s;
+}
+
+#highscore.celebrate::after{
+    right: 14%;
+    animation-delay: 0.2s;
+}
+
+/* ==========================================================================
+   Controls (Start / Restart)
+   ========================================================================== */
+
+.controls{
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin-bottom: var(--space-10);
+}
+
+.controls button{
+    /* vertical padding kept at 11px intentionally — matches the previously
+       approved appearance rather than rounding to the --space-4 scale step */
+    padding: 11px var(--space-8);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition:
+        transform var(--transition-release),
+        box-shadow var(--transition-release),
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast);
+}
+
+/* Quick, sharp press-down; the rule above governs the slower release. */
+.controls button:active{
+    transition:
+        transform var(--transition-press),
+        box-shadow var(--transition-press);
+}
+
+#startBtn{
+    border: none;
+    background-color: var(--color-accent);
+    color: #fff;
+    box-shadow: var(--shadow-accent);
+}
+
+/* Gated to real pointing devices — without this, a tap on a touchscreen
+   leaves :hover "stuck" applied until the player taps somewhere else,
+   since touch has no mouseleave equivalent to clear it. */
+@media (hover: hover) and (pointer: fine){
+    #startBtn:hover{
+        background-color: var(--color-accent-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-accent-hover);
+    }
+}
+
+#startBtn:active{
+    transform: translateY(0);
+    box-shadow: var(--shadow-accent-active);
+}
+
+#restartBtn{
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+@media (hover: hover) and (pointer: fine){
+    #restartBtn:hover{
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.32);
+        color: var(--color-text-primary);
+        transform: translateY(-1px);
+    }
+}
+
+#restartBtn:active{
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   Game board layout
+   ========================================================================== */
+
+/* Outer bezel. This no longer holds the pads directly — it wraps
+   .board-stage (the recessed bed the pads sit in) so the board has a real
+   frame-then-well depth instead of one flat panel. The layered
+   gradients read as light grazing the rim: a soft highlight top-left,
+   a soft falloff toward the bottom-right. */
+.btn-container{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: var(--board-frame-padding);
+    background:
+        linear-gradient(155deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 38%),
+        linear-gradient(210deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 55%),
+        var(--color-bg-end);
+    border: 1px solid var(--color-panel-border);
+    border-radius: var(--board-radius);
+    box-shadow: var(--shadow-board);
+}
+
+/* Inner stage — the sunken "well" the pads press down into. Its own
+   inset shadow (--shadow-board-stage) is what separates it visually from
+   the bezel around it, and its radial highlight fakes a light source
+   sitting above the whole board. */
+.board-stage{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--board-gap);
+    padding: var(--board-stage-padding);
+    background: radial-gradient(circle at 50% 32%, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 60%);
+    border-radius: var(--board-stage-radius);
+    box-shadow: var(--shadow-board-stage);
+}
+
+.line-one,
+.line-two{
+    display: flex;
+    gap: var(--board-gap);
+}
+
+/* Toggled by JS whenever input shouldn't count — the countdown and the
+   computer's turn. Dimmed rather than hidden so it's clearly "wait",
+   not "broken". */
+.btn-container.pads-locked .btn{
+    pointer-events: none;
+    opacity: 0.85;
+}
+
+/* Center hub — a fixed, non-interactive medallion sitting where all four
+   pads meet, echoing the classic Simon console's raised center piece.
+   pointer-events: none means it can never intercept a click; whichever
+   pad is under the cursor still receives it exactly as before. */
+.board-hub{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: calc(var(--hub-size) * 0.1);
+    place-items: center;
+    width: var(--hub-size);
+    height: var(--hub-size);
+    padding: calc(var(--hub-size) * 0.24);
+    background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 55%),
+        linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(0, 0, 0, 0.28) 100%),
+        var(--color-bg-end);
+    border-radius: 50%;
+    box-shadow: var(--shadow-hub);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.board-hub-dot{
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    opacity: 0.6;
+}
+
+.dot-yellow{ background-color: var(--color-yellow); }
+.dot-red{ background-color: var(--color-red); }
+.dot-green{ background-color: var(--color-green); }
+.dot-purple{ background-color: var(--color-purple); }
+
+/* ==========================================================================
+   Game buttons (color pads)
+   ========================================================================== */
+
+.btn{
+    /* These are now real <button> elements (for keyboard/AT support) so
+       the default button chrome needs resetting the same way the browser
+       would otherwise draw it. */
+    appearance: none;
+    -webkit-appearance: none;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    height: var(--game-btn-size);
+    width: var(--game-btn-size);
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    box-shadow: var(--shadow-game-btn);
+    filter: var(--pad-saturate);
+    transition:
+        transform var(--transition-release),
+        box-shadow var(--transition-release),
+        filter var(--transition-fast),
+        opacity var(--transition-fast);
+}
+
+@media (hover: hover) and (pointer: fine){
+    .btn:hover{
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: var(--shadow-game-btn-hover);
+    }
+}
+
+.btn:active{
+    transform: translateY(0) scale(0.98);
+    box-shadow: var(--shadow-game-btn-active);
+    transition:
+        transform var(--transition-press),
+        box-shadow var(--transition-press);
+}
+
+/* Shared with .controls button — same focus/disabled treatment for every
+   interactive control in the app, not just the game pads. */
+.btn:focus-visible,
+.controls button:focus-visible{
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.btn:disabled,
+.controls button:disabled{
+    cursor: default;
+}
+
+/* Molded-plastic sheen: a low-opacity diagonal highlight blended into the
+   pad's own color rather than painted on top of it, so it reads as light
+   grazing a curved surface instead of a gloss sticker. border-radius:
+   inherit keeps it following each pad's own outer/inner corner mix. */
+.btn::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.08) 22%, rgba(255, 255, 255, 0) 48%, rgba(0, 0, 0, 0.1) 100%);
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+/* Click ripple: an inscribed circle that expands from the center and
+   fades out. transform/opacity only — no layout or paint cost — and
+   clipped to the pad's rounded corners by the parent's overflow: hidden. */
+.btn::after{
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.4);
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+}
+
+/* --pad-glow/--pad-glow-soft feed the colored rings in --shadow-flash/
+   --shadow-user-flash above — each pad glows its own color instead of a
+   generic white ring. Per-corner border-radius (big on the outer corner,
+   tight on the three inner ones) is what pulls all four pads into a
+   single rounded-square silhouette with a seam cross down the middle. */
+.yellow{
+    background-color: var(--color-yellow);
+    --pad-glow: var(--color-yellow);
+    --pad-glow-soft: rgba(249, 155, 69, 0.4);
+    border-radius: var(--pad-radius-inner) var(--pad-radius-outer) var(--pad-radius-inner) var(--pad-radius-inner);
+}
+
+.red{
+    background-color: var(--color-red);
+    --pad-glow: var(--color-red);
+    --pad-glow-soft: rgba(217, 89, 128, 0.4);
+    border-radius: var(--pad-radius-outer) var(--pad-radius-inner) var(--pad-radius-inner) var(--pad-radius-inner);
+}
+
+.green{
+    background-color: var(--color-green);
+    --pad-glow: var(--color-green);
+    --pad-glow-soft: rgba(99, 170, 192, 0.4);
+    border-radius: var(--pad-radius-inner) var(--pad-radius-inner) var(--pad-radius-inner) var(--pad-radius-outer);
+}
+
+.purple{
+    background-color: var(--color-purple);
+    --pad-glow: var(--color-purple);
+    --pad-glow-soft: rgba(129, 159, 249, 0.4);
+    border-radius: var(--pad-radius-inner) var(--pad-radius-inner) var(--pad-radius-outer) var(--pad-radius-inner);
+}
+
+/* ==========================================================================
+   Gameplay feedback states
+   ========================================================================== */
+
+.flash{
+    transform: scale(1.05);
+    filter: var(--pad-saturate) brightness(135%);
+    box-shadow: var(--shadow-flash);
+}
+
+.userFlash{
+    transform: scale(1.02);
+    filter: var(--pad-saturate) brightness(122%);
+    box-shadow: var(--shadow-user-flash);
+}
+
+.userFlash::after{
+    animation: rippleExpand 0.25s var(--ease-standard);
+}
+
+/* ==========================================================================
+   Responsive
+   Width scaling lives in the fluid clamp() tokens in :root — desktop
+   through mobile all read from the same formulas, so there's no separate
+   width breakpoint to keep in sync. The one case clamp() can't cover is
+   *short* viewports (a phone in landscape), where height, not width, is
+   the constraint — that gets its own targeted query below.
+   ========================================================================== */
+
+@media (max-height: 480px){
+    body{
+        padding: var(--space-6) var(--space-7);
+    }
+
+    main > h1{
+        margin-bottom: var(--space-1);
+    }
+
+    .scoreboard{
+        margin: var(--space-1) 0 var(--space-4);
+    }
+
+    #statusMessage{
+        margin-bottom: var(--space-4);
+    }
+
+    .controls{
+        margin-bottom: var(--space-5);
+    }
+}
+
+/* ==========================================================================
+   Motion
+   Keyframes referenced above. transform/opacity only, aside from .flash /
+   .userFlash / the game-over wash, which need filter and box-shadow to
+   actually read as "brightness" and "glow".
+   ========================================================================== */
+
+@keyframes fadeSlideIn{
+    from{
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* A fade-in with a small overshoot-and-settle scale, rather than a flat
+   slide — reads as a value actually "ticking" rather than just appearing. */
+@keyframes badgeUpdate{
+    0%{
+        opacity: 0;
+        transform: translateY(6px) scale(0.96);
+    }
+    60%{
+        opacity: 1;
+        transform: translateY(0) scale(1.05);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes celebrateUpdate{
+    0%{
+        opacity: 0;
+        transform: translateY(6px) scale(1);
+        box-shadow: var(--shadow-panel);
+    }
+    55%{
+        opacity: 1;
+        transform: translateY(0) scale(1.14);
+        filter: brightness(1.2);
+        box-shadow: var(--shadow-panel), 0 0 24px 4px var(--color-celebrate-glow);
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: brightness(1);
+        box-shadow: var(--shadow-panel);
+    }
+}
+
+@keyframes countdownPop{
+    from{
+        opacity: 0;
+        transform: scale(0.7);
+    }
+    60%{
+        opacity: 1;
+        transform: scale(1.08);
+    }
+    to{
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes sparkleFloat{
+    0%{
+        opacity: 0;
+        transform: translateY(4px) scale(0.6) rotate(-8deg);
+    }
+    35%{
+        opacity: 1;
+        transform: translateY(-6px) scale(1) rotate(4deg);
+    }
+    100%{
+        opacity: 0;
+        transform: translateY(-16px) scale(0.8) rotate(10deg);
+    }
+}
+
+@keyframes rippleExpand{
+    from{
+        opacity: 0.45;
+        transform: scale(0);
+    }
+    to{
+        opacity: 0;
+        transform: scale(1.4);
+    }
+}
+
+@keyframes gameOverPulse{
+    0%{
+        opacity: 0;
+    }
+    30%{
+        opacity: 1;
+    }
+    100%{
+        opacity: 0;
+    }
+}
+
+/* ==========================================================================
+   Reduced motion
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce){
+    *,
+    *::before,
+    *::after{
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
