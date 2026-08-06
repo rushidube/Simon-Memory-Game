@@ -109,6 +109,10 @@ let isPlayerTurn = false; // the player, specifically, may click pads right now
 let currentLevel = 0;
 let highScore = readStoredHighScore();
 
+// Timestamp for the moment the player's turn began on the current level —
+// consumed by StatsManager.recordLevelComplete to time that level.
+let levelStartTime = null;
+
 // Bumped every time the game resets. Anything scheduled with setTimeout
 // checks this before acting, so a mid-sequence Restart can't leak stray
 // flashes or auto-advances from the game it just cancelled.
@@ -255,6 +259,7 @@ function playSequence() {
     setTimeout(() => {
         if (isStaleSession(sessionId)) return;
         isPlayerTurn = true;
+        levelStartTime = Date.now();
         lockPads(false);
         setStatusMessage(YOUR_TURN_MESSAGE);
     }, totalDuration);
@@ -263,6 +268,7 @@ function playSequence() {
 function startNextLevel() {
     userSequence = [];
     currentLevel += 1;
+    StatsManager.recordLevelReached(currentLevel);
     updateLevelDisplay(currentLevel);
     setStatusMessage(`Level ${currentLevel}`);
 
@@ -281,9 +287,12 @@ function checkAnswer(index) {
 
     if (!isCorrect) {
         AudioManager.play("wrong");
+        StatsManager.recordIncorrectPress();
         handleGameOver();
         return;
     }
+
+    StatsManager.recordCorrectPress();
 
     const sequenceComplete = userSequence.length === gameSequence.length;
     if (!sequenceComplete) return;
@@ -298,6 +307,11 @@ function checkAnswer(index) {
     AudioManager.play("levelComplete");
     setStatusMessage(getLevelCompleteMessage(currentLevel));
 
+    if (levelStartTime !== null) {
+        StatsManager.recordLevelComplete(Date.now() - levelStartTime);
+        levelStartTime = null;
+    }
+
     const sessionId = gameSessionId;
     setTimeout(() => {
         if (isStaleSession(sessionId)) return;
@@ -308,6 +322,7 @@ function checkAnswer(index) {
 function handleGameOver() {
     const finalScore = currentLevel - 1;
     const isNewHighScore = finalScore > highScore;
+    StatsManager.recordGameOver({ finalScore, isNewHighScore });
 
     // Ends the session now, then remembers the id resetGame() just set.
     // The two cues below are scheduled *after* this and would otherwise
@@ -347,6 +362,7 @@ function resetGame() {
     gameSequence = [];
     userSequence = [];
     currentLevel = 0;
+    levelStartTime = null;
     startButton.disabled = false;
     lockPads(false);
 }
@@ -390,6 +406,7 @@ startButton.addEventListener("click", () => {
     if (isGameActive) return;
 
     isGameActive = true;
+    StatsManager.recordGameStart();
     startButton.disabled = true;
     lockPads(true);
     AudioManager.play("start");
