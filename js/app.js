@@ -459,6 +459,8 @@ document.addEventListener("visibilitychange", () => {
 // ---------------------------------------------------------------------------
 
 function formatDuration(ms) {
+    if (ms < 10000) return `${(ms / 1000).toFixed(2)}s`;
+
     const totalSeconds = Math.round(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -537,7 +539,7 @@ function resetStatsConfirmUI() {
 function handleStatsResetClick() {
     statsResetBtn.hidden = true;
     statsResetConfirm.hidden = false;
-    statsResetConfirmBtn.focus();
+    statsResetCancelBtn.focus();
 }
 
 function handleStatsResetCancel() {
@@ -608,7 +610,7 @@ function closeStatsPanel() {
     statsToggleBtn.setAttribute("aria-expanded", "false");
     document.removeEventListener("keydown", handleStatsKeydown);
     resetStatsConfirmUI();
-    if (statsLastFocusedElement) statsLastFocusedElement.focus();
+    (statsLastFocusedElement && statsLastFocusedElement !== document.body ? statsLastFocusedElement : statsToggleBtn).focus();
 
     // Fallback: ensure hidden attributes are set if transitionend doesn't fire
     // (e.g., due to very short or missing CSS transitions)

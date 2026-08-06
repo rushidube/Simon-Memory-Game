@@ -933,6 +933,10 @@ h1{
     text-align: left;
 }
 
+.stats-panel[hidden]{
+    display: none;
+}
+
 .stats-panel.is-open{
     transform: translateX(0);
 }
