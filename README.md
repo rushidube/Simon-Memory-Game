@@ -82,6 +82,25 @@ Then visit `http://localhost:8000`.
 4. Pressing the wrong pad ends the game and shows your score.
 5. Beat your previous best to set a new high score.
 
+## Statistics Dashboard
+
+Click the 📊 icon next to the scoreboard to open a slide-out panel
+tracking your performance across every session, not just the current one:
+
+- **Games Played**, **Highest Level Reached**, **Average Score**
+- **Correct/Incorrect Presses**, **Longest/Current Streak** — streak
+  counts consecutive correct pad presses across your whole history, reset
+  only by an actual wrong press (not by starting a new game)
+- **Total Time Played**, **Fastest Level Completion Time**
+- **Sequences Completed**, **Last Game Score**, **Last Played**, **High
+  Scores Achieved**
+- A mini bar chart of your last 10 game scores
+
+All of it lives under its own `simonStats` key in `localStorage`,
+completely separate from `highScore`. **Reset Statistics** (inside the
+panel, behind a confirmation step) clears only that key — your high score
+is never touched.
+
 ## Screenshots
 
 *Add screenshots to `assets/images/` and reference them here before
