@@ -529,6 +529,29 @@ function renderStatsPanel() {
     renderStatsChart(stats);
 }
 
+function resetStatsConfirmUI() {
+    statsResetBtn.hidden = false;
+    statsResetConfirm.hidden = true;
+}
+
+function handleStatsResetClick() {
+    statsResetBtn.hidden = true;
+    statsResetConfirm.hidden = false;
+    statsResetConfirmBtn.focus();
+}
+
+function handleStatsResetCancel() {
+    resetStatsConfirmUI();
+    statsResetBtn.focus();
+}
+
+function handleStatsResetConfirm() {
+    StatsManager.reset();
+    resetStatsConfirmUI();
+    renderStatsPanel();
+    statsResetBtn.focus();
+}
+
 let statsLastFocusedElement = null;
 
 function getFocusableStatsElements() {
@@ -584,6 +607,7 @@ function closeStatsPanel() {
     statsPanel.classList.remove("is-open");
     statsToggleBtn.setAttribute("aria-expanded", "false");
     document.removeEventListener("keydown", handleStatsKeydown);
+    resetStatsConfirmUI();
     if (statsLastFocusedElement) statsLastFocusedElement.focus();
 
     // Fallback: ensure hidden attributes are set if transitionend doesn't fire
@@ -600,3 +624,6 @@ statsPanel.addEventListener("transitionend", handleStatsPanelTransitionEnd);
 statsToggleBtn.addEventListener("click", openStatsPanel);
 statsCloseBtn.addEventListener("click", closeStatsPanel);
 statsOverlay.addEventListener("click", closeStatsPanel);
+statsResetBtn.addEventListener("click", handleStatsResetClick);
+statsResetCancelBtn.addEventListener("click", handleStatsResetCancel);
+statsResetConfirmBtn.addEventListener("click", handleStatsResetConfirm);
